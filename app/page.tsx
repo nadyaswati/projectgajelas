@@ -3,25 +3,26 @@
 import { useState, useEffect } from "react";
 import confetti from "canvas-confetti";
 
-type Position = { x: number; y: number };
-
 export default function Page() {
   const [mounted, setMounted] = useState(false);
   const [yesPressed, setYesPressed] = useState(false);
   const [noCount, setNoCount] = useState(0);
-  const [noPosition, setNoPosition] = useState<Position | null>(null);
+  const [noPosition, setNoPosition] = useState<{ x: number; y: number } | null>(null);
   const [windowSize, setWindowSize] = useState({ width: 0, height: 0 });
 
-  // Jalankan hanya di client
+  // ⚡ Client-only setup
   useEffect(() => {
     setMounted(true);
-    setWindowSize({ width: window.innerWidth, height: window.innerHeight });
 
-    const handleResize = () => {
+    // Ambil ukuran window hanya di client
+    const updateWindowSize = () => {
       setWindowSize({ width: window.innerWidth, height: window.innerHeight });
     };
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
+
+    updateWindowSize();
+    window.addEventListener("resize", updateWindowSize);
+
+    return () => window.removeEventListener("resize", updateWindowSize);
   }, []);
 
   const phrases = [
@@ -36,14 +37,13 @@ export default function Page() {
     "Klik Mau aja...",
   ];
 
+  // Pindahkan tombol NO
   const moveNoButton = () => {
-    if (!mounted) return;
+    const maxX = Math.min(windowSize.width * 0.35, 250); // max 250px dari center
+    const maxY = Math.min(windowSize.height * 0.35, 250); // max 250px dari center
 
-    const maxX = windowSize.width * 0.8;
-    const maxY = windowSize.height * 0.8;
-
-    const randomX = (Math.random() - 0.5) * maxX;
-    const randomY = (Math.random() - 0.5) * maxY;
+    const randomX = (Math.random() - 0.5) * 2 * maxX;
+    const randomY = (Math.random() - 0.5) * 2 * maxY;
 
     setNoPosition({ x: randomX, y: randomY });
     setNoCount((prev) => prev + 1);
@@ -51,14 +51,10 @@ export default function Page() {
 
   const handleYes = () => {
     setYesPressed(true);
-
-    confetti({
-      particleCount: 250,
-      spread: 160,
-    });
+    confetti({ particleCount: 250, spread: 160 });
   };
 
-  if (!mounted) return null;
+  if (!mounted) return null; // ❌ Jangan render di server
 
   return (
     <div className="h-screen w-screen flex items-center justify-center bg-gradient-to-br from-pink-300 via-rose-200 to-purple-400 overflow-hidden">
@@ -82,7 +78,8 @@ export default function Page() {
           </h1>
         </div>
       ) : (
-        <div className="w-[70vw] h-[70vh] backdrop-blur-2xl bg-white/30 rounded-[45px] shadow-[0_25px_80px_rgba(0,0,0,0.25)] border border-white/40 flex flex-col items-center justify-center relative">
+        <div className="w-[70vw] h-[70vh] max-w-[500px] max-h-[600px] backdrop-blur-2xl bg-white/30 rounded-[45px] shadow-[0_25px_80px_rgba(0,0,0,0.25)] border border-white/40 flex flex-col items-center justify-center relative">
+          
           {/* GIF */}
           <img
             className="h-[240px] mb-8"
