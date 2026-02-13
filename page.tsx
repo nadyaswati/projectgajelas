@@ -13,16 +13,14 @@ export default function Page() {
   // ⚡ Client-only setup
   useEffect(() => {
     setMounted(true);
+    setWindowSize({ width: window.innerWidth, height: window.innerHeight });
 
-    // Ambil ukuran window hanya di client
-    const updateWindowSize = () => {
+    const handleResize = () => {
       setWindowSize({ width: window.innerWidth, height: window.innerHeight });
     };
 
-    updateWindowSize();
-    window.addEventListener("resize", updateWindowSize);
-
-    return () => window.removeEventListener("resize", updateWindowSize);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
 
   const phrases = [
@@ -37,13 +35,12 @@ export default function Page() {
     "Klik Mau aja...",
   ];
 
-  // Pindahkan tombol NO
   const moveNoButton = () => {
-    const maxX = Math.min(windowSize.width * 0.35, 250); // max 250px dari center
-    const maxY = Math.min(windowSize.height * 0.35, 250); // max 250px dari center
+    const maxX = windowSize.width * 0.8;
+    const maxY = windowSize.height * 0.8;
 
-    const randomX = (Math.random() - 0.5) * 2 * maxX;
-    const randomY = (Math.random() - 0.5) * 2 * maxY;
+    const randomX = (Math.random() - 0.5) * maxX;
+    const randomY = (Math.random() - 0.5) * maxY;
 
     setNoPosition({ x: randomX, y: randomY });
     setNoCount((prev) => prev + 1);
@@ -54,11 +51,10 @@ export default function Page() {
     confetti({ particleCount: 250, spread: 160 });
   };
 
-  if (!mounted) return null; // ❌ Jangan render di server
+  if (!mounted) return null;
 
   return (
     <div className="h-screen w-screen flex items-center justify-center bg-gradient-to-br from-pink-300 via-rose-200 to-purple-400 overflow-hidden">
-
       {/* 🔥 AUTOPLAY MUSIC */}
       <iframe
         className="hidden"
@@ -78,8 +74,7 @@ export default function Page() {
           </h1>
         </div>
       ) : (
-        <div className="w-[70vw] h-[70vh] max-w-[500px] max-h-[600px] backdrop-blur-2xl bg-white/30 rounded-[45px] shadow-[0_25px_80px_rgba(0,0,0,0.25)] border border-white/40 flex flex-col items-center justify-center relative">
-          
+        <div className="w-[70vw] h-[70vh] backdrop-blur-2xl bg-white/30 rounded-[45px] shadow-[0_25px_80px_rgba(0,0,0,0.25)] border border-white/40 flex flex-col items-center justify-center relative">
           {/* GIF */}
           <img
             className="h-[240px] mb-8"
